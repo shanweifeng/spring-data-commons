@@ -24,8 +24,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * Default implementation of {@link RepositoryConfiguration}.
- * 
+ *
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSource>
 		implements RepositoryConfiguration<T> {
@@ -39,7 +40,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	/**
 	 * Creates a new {@link DefaultRepositoryConfiguration} from the given {@link RepositoryConfigurationSource} and
 	 * source {@link BeanDefinition}.
-	 * 
+	 *
 	 * @param configurationSource must not be {@literal null}.
 	 * @param definition must not be {@literal null}.
 	 */
@@ -114,7 +115,7 @@ public class DefaultRepositoryConfiguration<T extends RepositoryConfigurationSou
 	 * @see org.springframework.data.repository.config.RepositoryConfiguration#getImplementationBeanName()
 	 */
 	public String getImplementationBeanName() {
-		return StringUtils.uncapitalize(getImplementationClassName());
+		return configurationSource.generateBeanName(definition) + getImplementationPostfix();
 	}
 
 	/* 

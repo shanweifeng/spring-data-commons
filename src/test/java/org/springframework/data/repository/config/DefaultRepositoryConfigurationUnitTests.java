@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,17 @@ package org.springframework.data.repository.config;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
@@ -29,17 +35,28 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * Unit tests for {@link DefaultRepositoryConfiguration}.
  * 
  * @author Oliver Gierke
+ * @author Jens Schauder
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultRepositoryConfigurationUnitTests {
 
 	@Mock RepositoryConfigurationSource source;
 
+	@Before
+	public void before() {
+
+		RepositoryBeanNameGenerator generator = new RepositoryBeanNameGenerator(getClass().getClassLoader());
+		Answer<Object> answer = invocation -> generator.generateBeanName((BeanDefinition) invocation.getArguments()[0]);
+		when(source.generateBeanName(Mockito.any(BeanDefinition.class))).then(answer);
+	}
+
 	@Test
 	public void supportsBasicConfiguration() {
 
+		RootBeanDefinition beanDefinition = createBeanDefinition();
+
 		RepositoryConfiguration<RepositoryConfigurationSource> configuration = new DefaultRepositoryConfiguration<RepositoryConfigurationSource>(
-				source, new RootBeanDefinition("com.acme.MyRepository"));
+				source, beanDefinition);
 
 		assertThat(configuration.getConfigurationSource(), is(source));
 		assertThat(configuration.getImplementationBeanName(), is("myRepositoryImpl"));
@@ -47,5 +64,16 @@ public class DefaultRepositoryConfigurationUnitTests {
 		assertThat(configuration.getRepositoryInterface(), is("com.acme.MyRepository"));
 		assertThat(configuration.getQueryLookupStrategyKey(), is((Object) Key.CREATE_IF_NOT_FOUND));
 		assertThat(configuration.isLazyInit(), is(false));
+	}
+
+	private static RootBeanDefinition createBeanDefinition() {
+
+		RootBeanDefinition beanDefinition = new RootBeanDefinition("com.acme.MyRepository");
+
+		ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
+		constructorArgumentValues.addGenericArgumentValue(MyRepository.class);
+		beanDefinition.setConstructorArgumentValues(constructorArgumentValues);
+
+		return beanDefinition;
 	}
 }

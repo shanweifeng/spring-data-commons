@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.w3c.dom.Element;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Peter Rietzler
+ * @author Jens Schauder
  */
 public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSourceSupport {
 
@@ -61,7 +62,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 	 */
 	public XmlRepositoryConfigurationSource(Element element, ParserContext context, Environment environment) {
 
-		super(environment);
+		super(environment, context.getReaderContext().getBeanClassLoader());
 
 		Assert.notNull(element, "Element must not be null!");
 		Assert.notNull(context, "Context must not be null!");
@@ -126,7 +127,7 @@ public class XmlRepositoryConfigurationSource extends RepositoryConfigurationSou
 		return excludeFilters;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationSourceSupport#getIncludeFilters()
 	 */
