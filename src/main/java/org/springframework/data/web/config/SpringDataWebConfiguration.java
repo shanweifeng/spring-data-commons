@@ -16,6 +16,7 @@
 package org.springframework.data.web.config;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,14 +54,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 
-	@Autowired private ApplicationContext context;
 	@Autowired @Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService;
-
-	@Autowired(required = false)
-	private PageableHandlerMethodArgumentResolverCustomizer pageableResolverCustomizer;
-
-	@Autowired(required = false)
-	private SortHandlerMethodArgumentResolverCustomizer sortResolverCustomizer;
+	@Autowired private ApplicationContext context;
+	@Autowired private Optional<PageableHandlerMethodArgumentResolverCustomizer> pageableResolverCustomizer;
+	@Autowired private Optional<SortHandlerMethodArgumentResolverCustomizer> sortResolverCustomizer;
 
 	/*
 	 * (non-Javadoc)
@@ -68,8 +65,7 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public PageableHandlerMethodArgumentResolver pageableResolver() {
-		PageableHandlerMethodArgumentResolver pageableResolver =
-				new PageableHandlerMethodArgumentResolver(sortResolver());
+		PageableHandlerMethodArgumentResolver pageableResolver = new PageableHandlerMethodArgumentResolver(sortResolver());
 		customizePageableResolver(pageableResolver);
 		return pageableResolver;
 	}
@@ -147,15 +143,11 @@ public class SpringDataWebConfiguration extends WebMvcConfigurerAdapter {
 	}
 
 	protected void customizePageableResolver(PageableHandlerMethodArgumentResolver pageableResolver) {
-		if (this.pageableResolverCustomizer != null) {
-			this.pageableResolverCustomizer.customize(pageableResolver);
-		}
+		pageableResolverCustomizer.ifPresent(c -> c.customize(pageableResolver));
 	}
 
 	protected void customizeSortResolver(SortHandlerMethodArgumentResolver sortResolver) {
-		if (this.sortResolverCustomizer != null) {
-			this.sortResolverCustomizer.customize(sortResolver);
-		}
+		sortResolverCustomizer.ifPresent(c -> c.customize(sortResolver));
 	}
 
 }
